@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trend-webapp 
+spec: 
+  replicas: 2
+  selector:
+    matchLabels:
+      app: trend-webapp
+  template:
+    metadata:
+      labels:
+        app: trend-webapp
+    spec:
+      containers:
+      - name: trend-webapp
+        image: percianancy/trend-app:latest
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

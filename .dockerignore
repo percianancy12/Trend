@@ -1,0 +1,13 @@
+# Keep Docker build context clean and predictable
+.git
+.gitignore
+Dockerfile*
+README.md
+
+node_modules/
+logs/
+*.log
+bin/
+obj/
+.env
+*.pem

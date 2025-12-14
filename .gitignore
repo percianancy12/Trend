@@ -1,0 +1,39 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs & temp
+logs/
+*.log
+tmp/
+
+# Envs & secrets
+.env
+*.pem
+
+# Build outputs
+dist/
+bin/
+obj/
+
+# Dependencies
+node_modules/
+
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+
+# Kubernetes
+*.yaml~
+.kube/
+
+# Docker
+*.tar
+*.pid
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
