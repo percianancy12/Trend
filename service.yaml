@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: trend-webapp-service
 spec:
+  type: LoadBalancer
   selector:
     app: trend-webapp
-  ports:  
+  ports:
     - protocol: TCP
-      port: 80
-      targetPort: 80
-  type: LoadBalancer  
+      port: 3000        # external port (standard web traffic)
+      targetPort: 3000  # container port (your app)
