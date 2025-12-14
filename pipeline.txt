@@ -1,0 +1,72 @@
+pipeline {
+    agent any
+
+    environment {
+        REGISTRY    = "percianancy"
+        IMAGE       = "trend-app"
+        TAG         = "latest"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/percianancy12/Trend.git',
+                    credentialsId: 'git-creds'   // Jenkins GitHub credentials ID
+            }
+        }
+
+        stage('Build Image') {
+            steps {
+                sh '''
+                docker build -t $REGISTRY/$IMAGE:$TAG .
+                '''
+            }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PSW')]) {
+                    sh '''
+                    echo $DOCKER_PSW | docker login -u $DOCKER_USER --password-stdin
+                    '''
+                }
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                sh '''
+                docker push $REGISTRY/$IMAGE:$TAG
+                '''
+            }
+        }
+
+    stage('Deploy to EKS') {
+    steps {
+        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                          credentialsId: 'aws-c',
+                          accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                          secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+            sh '''
+              export AWS_DEFAULT_REGION=ap-south-1
+              aws eks update-kubeconfig --name project2-cluster --region ap-south-1
+              sed -i "s|image: .*|image: $REGISTRY/$IMAGE:$TAG|g" deployment.yaml
+              kubectl apply -f deployment.yaml
+              kubectl apply -f service.yaml
+              kubectl rollout status deployment/trend-webapp --timeout=120s
+            '''
+        }
+    }
+}
+    }
+
+    post {
+        failure {
+            echo "Build or deploy failed"
+        }
+        success {
+            echo "Successfully deployed percianancy/trend-app to EKS"
+        }
+    }
+}
